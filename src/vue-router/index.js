@@ -1,3 +1,5 @@
+import HashBrowser from "./hashBrowser";
+
 export let Vue;
 
 function createRouteMap(routes, pathMap = {}) {
@@ -47,10 +49,33 @@ function createMatcher(routes) {
   }
 }
 
+/** 核心分为路由映射表和路由系统 */
 export default class VueRouter {
   constructor(options) {
-    const { routes = [] } = options
+    const { routes = [], mode = 'hash' } = options
     this.matcher = createMatcher(routes)
+    switch (mode) {
+      case 'hash':
+        this.history = new HashBrowser(this)
+        break;
+      default:
+        break;
+    }
+  }
+
+  async init(app) {
+    const history = this.history
+    await history.transitionTo(history.getCurrentLocation())
+    // QA 为什么要在这里进行初始化, 在 new 示例时直接监听不行吗
+    history.setupListener()
+  }
+
+  match(location) {
+    return this.matcher.match(location)
+  }
+
+  push(location) {
+    this.history.transitionTo(location)
   }
 
   static install(_Vue) {
@@ -61,16 +86,39 @@ export default class VueRouter {
         if (this.$options.router) {
           this._routerRoot = this
           this._router = this.$options.router
+          this._router.init()
         } else {
           this._routerRoot = this.$parent?._routerRoot
         }
       }
     })
-    Vue.component('router-link', {
-      render() {
-        return <a>{this.$slots.default}</a>
+
+    Object.defineProperty(Vue.prototype, '$router', {
+      get() {
+        return this._routerRoot._router
       }
     })
+    // Vue.prototype
+
+    Vue.component('router-link', {
+      props: {
+        tag: { type: String, default: 'a' },
+        to: { type: String, require: true },
+      },
+      methods: {
+        handler() {
+          console.log(` ================== this ================= `, this)
+          this.$router.push(this.to)
+          // console.log(` ================== handler ================= `, )
+        }
+      },
+      render() {
+        let tag = this.tag
+        return <tag onClick={this.handler}>{this.$slots.default}</tag>
+        // return <a>{this.$slots.default}</a>
+      }
+    })
+
     Vue.component('router-view', {
       render() {
         return <div>空</div>
