@@ -9,4 +9,3 @@ let vm = new Vue({
   render: h => h(App)
 }).$mount('#app')
 
-console.log(vm._routerRoot)
