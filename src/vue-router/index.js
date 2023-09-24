@@ -131,8 +131,23 @@ export default class VueRouter {
     })
 
     Vue.component('router-view', {
-      render() {
-        return <div>空</div>
+      functional: true,
+      render(h, { data, parent }) {
+        // 计算深度标志位
+        data.routerView = true
+        // history.current
+        let route = parent.$route
+        let depth = 0
+        do {
+          if (parent.$vnode?.data.routerView) {
+            depth++
+          }
+        } while (parent = parent.$parent)
+        let record = route.matched[depth]
+        if (!record) {
+          return h()
+        }
+        return h(record.component, data)
       }
     })
   }
