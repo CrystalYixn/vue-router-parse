@@ -55,6 +55,7 @@ export default class VueRouter {
   constructor(options) {
     const { routes = [], mode = 'hash' } = options
     this.matcher = createMatcher(routes)
+    this.beforeEachHooks = []
     switch (mode) {
       case 'hash':
         this.history = new HashBrowser(this)
@@ -66,12 +67,16 @@ export default class VueRouter {
 
   async init(app) {
     const history = this.history
-    await history.transitionTo(history.getCurrentLocation())
-    // QA 为什么要在这里进行初始化, 在 new 示例时直接监听不行吗
-    history.setupListener()
     history.listen((newRoute) => {
       app._route = newRoute
     })
+    await history.transitionTo(history.getCurrentLocation())
+    // QA 为什么要在这里进行初始化, 在 new 示例时直接监听不行吗
+    history.setupListener()
+  }
+
+  beforeEach(cb) {
+    this.beforeEachHooks.push(cb)
   }
 
   match(location) {
@@ -144,6 +149,7 @@ export default class VueRouter {
           }
         } while (parent = parent.$parent)
         let record = route.matched[depth]
+        console.log(` ================== record ================= `, record)
         if (!record) {
           return h()
         }
