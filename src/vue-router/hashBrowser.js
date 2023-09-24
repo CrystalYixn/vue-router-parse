@@ -18,7 +18,7 @@ export default class HashBrowser extends History {
 
   setupListener() {
     window.addEventListener('hashchange', () => {
-      console.log(` ================== getCurrentLocation() ================= `, this.getCurrentLocation())
+      this.transitionTo(this.getCurrentLocation())
     })
   }
   

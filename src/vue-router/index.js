@@ -23,6 +23,7 @@ function addRouteRecord(route, pathMap, parent) {
       component,
       props,
       meta,
+      parent,
     }
   }
   children?.forEach(childrenRoute => {
@@ -68,14 +69,19 @@ export default class VueRouter {
     await history.transitionTo(history.getCurrentLocation())
     // QA 为什么要在这里进行初始化, 在 new 示例时直接监听不行吗
     history.setupListener()
+    history.listen((newRoute) => {
+      app._route = newRoute
+    })
   }
 
   match(location) {
     return this.matcher.match(location)
   }
 
-  push(location) {
-    this.history.transitionTo(location)
+  async push(location) {
+    // QA 直接改变路由地址, 然后由监听进行 transitionTo 不就行了吗?
+    await this.history.transitionTo(location)
+    window.location.hash = location
   }
 
   static install(_Vue) {
@@ -86,7 +92,8 @@ export default class VueRouter {
         if (this.$options.router) {
           this._routerRoot = this
           this._router = this.$options.router
-          this._router.init()
+          this._router.init(this)
+          Vue.util.defineReactive(this, '_route', this._router.history.current)
         } else {
           this._routerRoot = this.$parent?._routerRoot
         }
@@ -98,6 +105,12 @@ export default class VueRouter {
         return this._routerRoot._router
       }
     })
+
+    Object.defineProperty(Vue.prototype, '$route', {
+      get() {
+        return this._routerRoot?._route
+      }
+    })
     // Vue.prototype
 
     Vue.component('router-link', {
@@ -107,9 +120,7 @@ export default class VueRouter {
       },
       methods: {
         handler() {
-          console.log(` ================== this ================= `, this)
           this.$router.push(this.to)
-          // console.log(` ================== handler ================= `, )
         }
       },
       render() {
