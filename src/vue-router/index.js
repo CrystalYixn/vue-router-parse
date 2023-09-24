@@ -1,4 +1,5 @@
 import HashBrowser from "./hashBrowser";
+import HistoryBrowser from "./historyBrowser";
 
 export let Vue;
 
@@ -59,6 +60,9 @@ export default class VueRouter {
       case 'hash':
         this.history = new HashBrowser(this)
         break;
+      case 'history':
+        this.history = new HistoryBrowser(this)
+        break;
       default:
         break;
     }
@@ -85,7 +89,7 @@ export default class VueRouter {
   async push(location) {
     // QA 直接改变路由地址, 然后由监听进行 transitionTo 不就行了吗?
     await this.history.transitionTo(location)
-    window.location.hash = location
+    this.history.push(location)
   }
 
   static install(_Vue) {

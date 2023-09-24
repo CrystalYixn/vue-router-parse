@@ -25,4 +25,8 @@ export default class HashBrowser extends History {
   getCurrentLocation() {
     return getHash()
   }
+
+  push(location) {
+    window.location.hash = location
+  }
 }

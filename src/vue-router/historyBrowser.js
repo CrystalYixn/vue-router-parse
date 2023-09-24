@@ -6,11 +6,15 @@ export default class HistoryBrowser extends History {
   
   setupListener() {
     window.addEventListener('popstate', () => {
-      console.log(` ================== getCurrentLocation() ================= `, this.getCurrentLocation())
+      this.transitionTo(this.getCurrentLocation())
     })
   }
 
   getCurrentLocation() {
     return window.location.pathname
+  }
+
+  push(location) {
+    history.pushState({}, '', location)
   }
 }
