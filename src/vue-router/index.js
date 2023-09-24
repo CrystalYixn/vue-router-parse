@@ -12,10 +12,9 @@ function createRouteMap(routes, pathMap = {}) {
 function addRouteRecord(route, pathMap, parent) {
   let { path, component, props, meta, children } = route
   path = `${(
-    parent?.path === undefined || parent.path === '/'
+    parent?.path === undefined
       ? ''
-      : parent.path
-    + '/'
+      : (parent.path === '/' ? '' : parent.path) + '/'
   )}${path}`
   if (!(path in pathMap)) {
     pathMap[path] = {
@@ -149,7 +148,6 @@ export default class VueRouter {
           }
         } while (parent = parent.$parent)
         let record = route.matched[depth]
-        console.log(` ================== record ================= `, record)
         if (!record) {
           return h()
         }

@@ -68,11 +68,4 @@ const router = new VueRouter({
   routes
 })
 
-router.beforeEach((from, to, next) => {
-  console.log(` ================== 1 ================= `, )
-  setTimeout(() => {
-    next()
-  }, 1000)
-})
-
 export default router
